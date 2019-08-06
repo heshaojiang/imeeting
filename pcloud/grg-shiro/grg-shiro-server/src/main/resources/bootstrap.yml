@@ -1,0 +1,32 @@
+server:
+  port: 4080
+spring:
+  application:
+    name: grg-shiro-server
+  profiles:
+    active: dev
+logging:
+  config: file:./config/logback/logback_shiro_server.xml
+---
+spring:
+  profiles: dev
+eureka:
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 3 #客户端每隔n秒向服务端发送数据包
+    lease-expiration-duration-in-seconds: 7 # 客户端告知服务端：若在n秒内没有向服务器发送信息，则服务端将其从服务列表中删除
+  client:
+    fetchRegistry: true
+    registry-fetch-interval-seconds: 5 #定时的向Eureka确认，刷新自己的可用的服务列表，修改为5s，从服务失效到客户端发现最多7+5=12s
+    serviceUrl:
+      defaultZone: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+
+---
+spring:
+  profiles: prd
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://imeeting:imeeting123@imeeting-eureka:4010/eureka

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.pig.admin.mapper.BizMeetingParticipantMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.pig.admin.model.entity.BizMeetingParticipant">
+        <id column="id" property="id" />
+        <result column="nickname" property="nickname"/>
+        <result column="mute_mic" property="muteMic" />
+        <result column="mute_video" property="muteVideo" />
+        <result column="share_desktop" property="shareDesktop" />
+        <result column="meeting_id" property="meetingId" />
+        <result column="joined_time" property="joinedTime" />
+        <result column="latest_hbtime" property="latestHbTime" />
+        <result column="status" property="status" />
+        <result column="update_time" property="updateTime" />
+        <result column="del_flag" property="delFlag" />
+    </resultMap>
+
+    <!--ParticipantsList结果集-->
+    <resultMap id="ParticipantsListResultMap" type="com.github.pig.common.vo.ParticipantsList">
+        <!--<collection property="ParticipantList" ofType="com.github.pig.common.vo.MeetingParticipant">-->
+        <collection property="ParticipantList" ofType="com.github.pig.admin.model.entity.BizMeetingParticipant">
+            <id column="id" property="id" />
+            <result column="nickname" property="nickname"/>
+            <result column="mute_mic" property="muteMic" />
+            <result column="mute_video" property="muteVideo" />
+            <result column="share_desktop" property="shareDesktop" />
+            <result column="meeting_id" property="meetingId" />
+            <result column="joined_time" property="joinedTime" />
+            <result column="latest_hbtime" property="latestHbTime" />
+            <result column="status" property="status" />
+            <result column="update_time" property="updateTime" />
+            <result column="del_flag" property="delFlag" />
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, mute_mic AS muteMic, meeting_id AS meetingId
+    </sql>
+
+    <insert id="insert">
+        INSERT INTO biz_meeting_participant(id,meeting_id,meeting_mid,joined_time,nickname, latest_hbtime,status,update_time,del_flag)
+        VALUES(#{id},#{meetingId},#{meetingMid},#{joinedTime},#{nickname},#{latestHbTime},#{status},#{updateTime},#{delFlag})
+    </insert>
+
+    <delete id="deleteBySId">
+        DELETE FROM biz_meeting_participant WHERE id=#{id}
+    </delete>
+
+    <!--<update id="updateById">-->
+        <!--UPDATE biz_meeting_participant set mute_mic=#{muteMic} WHERE id=#{id}-->
+    <!--</update>-->
+
+    <select id="selectAllList" resultMap="ParticipantsListResultMap">
+        SELECT
+        id, nickname, mute_mic AS muteMic, meeting_id AS meetingId, updated_at AS updatedAt, latest_hbtime AS latestHbTime
+        FROM
+        biz_meeting_participant
+        WHERE meeting_id = #{meetingId}
+    </select>
+
+    <select id="selectParticipantByIdAndHbtime" resultMap="BaseResultMap">
+        SELECT * FROM biz_meeting_participant WHERE id=#{id} AND latest_hbtime <![CDATA[<]]> #{latestHbTime}
+    </select>
+
+    <update id="updateParticipantTimeAndStatusById">
+        UPDATE biz_meeting_participant set latest_hbtime=#{latestHbTime},update_time=#{updateTime},status=#{status} WHERE id=#{id}
+    </update>
+
+    <update id="updateParticipantStatusById">
+        UPDATE biz_meeting_participant set status=#{status},update_time=#{updateTime} WHERE id=#{id}
+    </update>
+
+    <select id="selectParticipantByHbtime" resultMap="BaseResultMap">
+        SELECT * FROM biz_meeting_participant WHERE latest_hbtime <![CDATA[<]]> #{latestHbTime} and del_flag = 0 and status = 0
+    </select>
+
+    <update id="deleteLessHeartParticipants" >
+        UPDATE biz_meeting_participant set status = 1 WHERE latest_hbtime <![CDATA[<]]> #{latestHbTime} and del_flag = 0 and status = 0
+    </update>
+
+
+    <select id="countParticipantOnLine" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT count(*) FROM biz_meeting_participant WHERE 0=0
+        <if test="meetingMid != null and meetingMid != ''">
+            AND meeting_mid = #{meetingMid}
+        </if>
+        and del_flag = 0 and status = 0
+    </select>
+    <select id="countMeetingOnLine" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM
+        (SELECT meeting_mid FROM biz_meeting_participant WHERE del_flag = 0 and status = 0 GROUP BY meeting_mid) t;
+    </select>
+
+    <select id="selectParticipantByMid" resultType="com.github.pig.common.vo.MeetingParticipant">
+        SELECT * FROM biz_meeting_participant WHERE meeting_mid = #{meetingMid} and del_flag = 0 and status = 0
+    </select>
+</mapper>

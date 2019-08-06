@@ -1,0 +1,8 @@
+FROM java:8-jre
+MAINTAINER Pig lengleng <wangiegie@gmail.com>
+
+ADD ./jar/grg-meeting.jar /app/
+ADD ./jar/pinpoint-agent /app/pinpoint-agent
+
+CMD ["java", "-Xmx1000m", "-javaagent:/app/pinpoint-agent/pinpoint-bootstrap-1.5.0.jar", "-Dpinpoint.agentId=grg-meeting", "-Dpinpoint.applicationName=grg-meeting", "-jar", "/app/grg-meeting.jar"]
+

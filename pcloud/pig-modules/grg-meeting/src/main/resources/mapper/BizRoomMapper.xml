@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.pig.admin.mapper.BizRoomMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.pig.admin.model.entity.BizRoom">
+        <id column="room_id" property="roomId" />
+        <result column="room_no" property="roomNo" />
+        <result column="room_name" property="roomName" />
+        <result column="terminal_type" property="terminalType" />
+        <result column="customer_id" property="customerId" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="del_flag" property="delFlag" />
+        <result column="user_id" property="userId" />
+    </resultMap>
+
+    <!-- 通用查询映射结果Room、customer信息 -->
+    <resultMap id="RoomVoResultMap" type="com.github.pig.common.vo.RoomVo">
+        <id column="room_id" property="roomId" />
+        <result column="room_no" property="roomNo" />
+        <result column="room_name" property="roomName" />
+        <result column="terminal_type" property="terminalType" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="del_flag" property="delFlag" />
+        <result column="user_id" property="userId" />
+        <collection property="customerList" ofType="com.github.pig.common.vo.BizCustomer">
+            <id column="customerId" property="customerId" />
+            <result column="customer_name" property="customerName" />
+        </collection>
+        <collection property="userList" ofType="com.github.pig.common.vo.UserVo">
+            <id column="userId" property="userId" />
+            <result column="username" property="username" />
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+       room_id AS roomId,room_no AS roomNo, room_name AS roomName, terminal_type AS terminalType, customer_id AS customerId, status, create_time AS createTime, update_time AS updateTime, del_flag AS delFlag
+    </sql>
+
+    <select id="selectBizRoomByRoomNo" resultMap="BaseResultMap">
+       SELECT
+          *
+       FROM
+          biz_room
+       WHERE
+          room_no=#{roomNo}
+    </select>
+
+    <select id="selectBizRoomPage" resultMap="RoomVoResultMap">
+        SELECT
+        rc.room_id,
+        rc.room_no,
+        rc.room_name,
+        rc.terminal_type,
+        rc.customer_id,
+        rc.status,
+        rc.create_time,
+        rc.update_time,
+        rc.del_flag,
+        rc.customer_id AS customerId,
+        rc.customer_name,
+        u.user_id AS userId,
+        u.username
+        FROM (SELECT
+        r.user_id,
+        r.room_id,
+        r.room_no,
+        r.room_name,
+        r.terminal_type,
+        r.customer_id,
+        r.status,
+        r.create_time,
+        r.update_time,
+        r.del_flag,
+        c.customer_id AS customerId,
+        c.customer_name
+        FROM biz_room r,biz_customer c
+        WHERE r.customer_id = c.customer_id
+        AND r.del_flag = 0) AS rc LEFT JOIN sys_user AS u ON rc.user_id = u.user_id
+        WHERE 0 = 0
+        <if test="customerId !='0'.toString()">
+            AND rc.customer_id = #{customerId}
+        </if>
+        <if test="roomNo != null and roomNo != ''">
+            AND rc.room_no LIKE CONCAT('%',#{roomNo},'%')
+        </if>
+        <if test="roomUser != null and roomUser != ''">
+            AND rc.user_id = #{roomUser}
+        </if>
+        <if test="status != null and status != ''">
+            AND rc.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            <choose>
+                <when test="_databaseId=='mysql'">
+                    AND CONCAT( IFNULL(rc.room_no,''), IFNULL(rc.room_name,''), IFNULL(rc.customer_name,''), IFNULL(u.username,'') )
+                </when>
+                <when test="_databaseId=='oracle'">
+                    AND (nvl(rc.room_no,'') || nvl(rc.room_name,'') || nvl(rc.customer_name,'') || nvl(u.username,''))
+                </when>
+            </choose>
+             LIKE #{pattern}
+        </if>
+        ORDER BY rc.create_time DESC
+    </select>
+
+    <select id="selectRoomVoById" resultMap="RoomVoResultMap">
+        SELECT
+        rc.room_id,
+        rc.room_no,
+        rc.room_name,
+        rc.terminal_type,
+        rc.customer_id,
+        rc.status,
+        rc.create_time,
+        rc.update_time,
+        rc.del_flag,
+        rc.customer_id AS customerId,
+        rc.customer_name,
+        u.user_id AS userId,
+        u.username
+        FROM (SELECT
+        r.user_id,
+        r.room_id,
+        r.room_no,
+        r.room_name,
+        r.terminal_type,
+        r.customer_id,
+        r.status,
+        r.create_time,
+        r.update_time,
+        r.del_flag,
+        c.customer_id AS customerId,
+        c.customer_name
+        FROM biz_room r,biz_customer c
+        WHERE r.customer_id = c.customer_id
+        AND r.del_flag = 0) as rc LEFT JOIN sys_user AS u ON rc.user_id = u.user_id
+        WHERE room_id=#{roomId}
+        ORDER BY create_time DESC
+    </select>
+
+    <update id="updateUserIdById">
+       UPDATE biz_room set user_id = NULL WHERE room_id = #{roomId}
+    </update>
+</mapper>

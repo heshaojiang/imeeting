@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.pig.admin.mapper.BizMeetingParticipantPlanMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.pig.admin.model.entity.BizMeetingParticipantPlan">
+        <id column="id" property="id" />
+        <result column="meeting_mid" property="meeting_mid" />
+        <result column="user_id" property="user_id" />
+        <result column="join_type" property="join_type" />
+    </resultMap>
+
+    <resultMap id="ParticipantPlanResultMap" type="com.github.pig.common.vo.MeetingParticipantPlan">
+        <id column="id" property="id" />
+        <result column="meeting_mid" property="meeting_mid" />
+        <result column="user_id" property="user_id" />
+        <result column="nickname" property="nickname" />
+        <result column="join_type" property="join_type" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, meeting_mid AS meetingMid, user_id AS userId, join_type AS joinType
+    </sql>
+
+    <select id="selectParticipantPlanByMid" resultMap="ParticipantPlanResultMap">
+        SELECT
+        p.id,
+        p.user_id AS user_id,
+        p.meeting_mid AS meeting_mid,
+        p.join_type AS join_type,
+        u.nickname AS nickname
+        FROM biz_meeting_participant_plan p,sys_user u
+        WHERE p.meeting_mid = #{meetingMid}
+        AND p.user_id = u.user_id
+    </select>
+</mapper>

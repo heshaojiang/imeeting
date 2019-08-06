@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.grgbanking.grgacd.mapper.SysUserMapper">
+
+    <!-- userVo结果集 -->
+    <resultMap id="userResultMap" type="com.grgbanking.grgacd.model.SysUser">
+        <id column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="introduction" property="introduction" />
+        <result column="telephone" property="call"/>
+        <result column="email" property="email"/>
+        <result column="avatar" property="avatar"/>
+        <result column="login_time" property="loginTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="customer_id" property="customerId"/>
+        <collection column="user_id" property="acdQueues"
+                    select="com.grgbanking.grgacd.mapper.AcdAgentQueueMapper.selectQueueByAgent"></collection>
+    </resultMap>
+
+    <sql id="selectUser">
+        SELECT
+            sys_user.*
+        FROM
+            sys_user
+        LEFT JOIN sys_user_role role ON sys_user.user_id=role.user_id
+    </sql>
+
+    <!--查询一个队列所有的客服成员-->
+    <select id="selectAgentByQueueId" resultMap="userResultMap">
+        SELECT
+            sys_user.*
+        FROM
+            acd_agent_queue queue
+        RIGHT JOIN sys_user ON queue.agent_id = sys_user.user_id
+        WHERE queue_id=#{queueId}
+    </select>
+
+    <!--查询所有的客服-->
+    <select id="selectAgentList" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        <where>
+            role_id = 6 AND sys_user.del_flag=0
+            <if test="username != null and username != ''">
+                AND username = #{username}
+            </if>
+            <if test="nickname != null and nickname != ''">
+                AND nickname LIKE CONCAT('%',#{nickname},'%')
+            </if>
+            <if test="keyword != null and keyword != ''">
+                <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+                <bind name="pattern" value="'%' + keyword + '%'"/>
+                <choose>
+                    <when test="_databaseId=='mysql'">
+                        AND CONCAT( IFNULL(username,''),IFNULL(nickname,'') )
+                    </when>
+                    <when test="_databaseId=='oracle'">
+                        AND CONCAT( nvl(username,''),nvl(nickname,'') )
+                    </when>
+                </choose>
+                LIKE #{pattern}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAgentNoPageList" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        WHERE
+            role_id = 6
+    </select>
+
+    <select id="getByName" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        WHERE
+            username = #{username}
+    </select>
+
+    <select id="getById" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        WHERE
+        user_id = #{userId}
+    </select>
+</mapper>

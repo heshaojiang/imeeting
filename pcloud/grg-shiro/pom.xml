@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>pig</artifactId>
+        <groupId>com.github</groupId>
+        <version>${pig.version}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.grgbanking</groupId>
+    <artifactId>grg-shiro</artifactId>
+    <version>${pig.version}</version>
+    <name>pig-shiro</name>
+    <description>shiro父工程</description>
+    <modules>
+        <module>grg-shiro-server</module>
+        <module>grg-shiro-client</module>
+    </modules>
+    <packaging>pom</packaging>
+    <properties>
+        <shiro.version>1.4.0</shiro.version>
+    </properties>
+
+
+
+</project>

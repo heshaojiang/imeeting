@@ -1,0 +1,63 @@
+server:
+  port: 4030
+
+spring:
+  application:
+    name: pig-config-server
+  profiles:
+    active: native  #只能用native
+  cloud:
+    config:
+      server:
+        native:
+          searchLocations: file:./config
+        #git:
+          #uri:
+#          searchLocations: classpath:./config
+
+---
+spring:
+  profiles: native
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 3
+    lease-expiration-duration-in-seconds: 7
+    prefer-ip-address: true
+    metadata-map:
+      zone: zone-1
+  client:
+    registry-fetch-interval-seconds: 5
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+
+---
+spring:
+  profiles: native1
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 3
+    lease-expiration-duration-in-seconds: 7
+    prefer-ip-address: true
+    metadata-map:
+      zone: zone-1
+  client:
+    registry-fetch-interval-seconds: 5
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1 #,zone-2
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+      #zone-2: http://imeeting:imeeting123@localhost:5010/eureka
+
+
+
+

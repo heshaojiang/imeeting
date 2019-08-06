@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.pig.admin.mapper.SysUserMapper">
+    <!-- userVo结果集 -->
+    <resultMap id="userVoResultMap" type="com.github.pig.common.vo.UserVo">
+        <id column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="introduction" property="introduction" />
+        <result column="avatar" property="avatar" />
+        <result column="telephone" property="call"/>
+        <result column="email" property="email"/>
+        <result column="ulogin_time" property="loginTime"/>
+        <result column="ucreate_time" property="createTime"/>
+        <result column="uupdate_time" property="updateTime"/>
+        <result column="udel_flag" property="delFlag"/>
+        <result column="deptId" property="deptId"/>
+        <result column="deptName" property="deptName"/>
+        <result column="parent_Id" property="parentId"/>
+        <result column="customerId" property="customerId"/>
+        <collection property="roleList" ofType="com.github.pig.common.vo.SysRole">
+            <id column="role_id" property="roleId" />
+            <result column="role_name" property="roleName" />
+            <result column="role_code" property="roleCode" />
+            <result column="role_desc" property="roleDesc" />
+            <result column="role_level" property="level" />
+            <result column="rcreate_time" property="createTime" />
+            <result column="rupdate_time" property="updateTime" />
+        </collection>
+    </resultMap>
+
+    <!-- userVoForAdmin结果集 -->
+    <resultMap id="userVoForAdminResultMap" type="com.github.pig.common.vo.UserVo">
+        <id column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="salt" property="salt"/>
+        <result column="introduction" property="introduction" />
+        <result column="avatar" property="avatar" />
+        <result column="telephone" property="call"/>
+        <result column="email" property="email"/>
+        <result column="ulogin_time" property="loginTime"/>
+        <result column="ucreate_time" property="createTime"/>
+        <result column="uupdate_time" property="updateTime"/>
+        <result column="udel_flag" property="delFlag"/>
+        <result column="deptId" property="deptId"/>
+        <result column="deptName" property="deptName"/>
+        <result column="parent_Id" property="parentId"/>
+        <result column="customer_id" property="customerId"/>
+        <collection property="roleList" ofType="com.github.pig.common.vo.SysRole">
+            <id column="role_id" property="roleId" />
+            <result column="role_name" property="roleName" />
+            <result column="role_code" property="roleCode" />
+            <result column="role_desc" property="roleDesc" />
+            <result column="role_level" property="level" />
+            <result column="rcreate_time" property="createTime" />
+            <result column="rupdate_time" property="updateTime" />
+        </collection>
+        <collection property="customerList" ofType="com.github.pig.common.vo.BizCustomer">
+            <id column="customer_id" property="customerId" />
+            <result column="customer_Name" property="customerName" />
+        </collection>
+    </resultMap>
+
+    <!-- userVoAndRoom结果集 -->
+    <resultMap id="userVoAndRoomResultMap" type="com.github.pig.common.vo.UserVo">
+        <id column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="introduction" property="introduction" />
+        <result column="avatar" property="avatar" />
+        <result column="telephone" property="call"/>
+        <result column="email" property="email"/>
+        <result column="ulogin_time" property="loginTime"/>
+        <result column="ucreate_time" property="createTime"/>
+        <result column="uupdate_time" property="updateTime"/>
+        <result column="udel_flag" property="delFlag"/>
+        <result column="deptId" property="deptId"/>
+        <result column="deptName" property="deptName"/>
+        <result column="parent_Id" property="parentId"/>
+        <result column="customerId" property="customerId"/>
+        <collection property="roomList" ofType="com.github.pig.common.vo.BizRoom">
+            <id column="room_Id" property="roomId" />
+            <result column="customer_Id" property="customerId" />
+            <result column="room_No" property="roomNo" />
+            <result column="del_flag" property="delFlag" />
+        </collection>
+    </resultMap>
+
+    <sql id="selectUserVo">
+        SELECT
+            user1.user_id,
+            user1.username,
+            user1.nickname,
+            user1.password,
+            user1.salt,
+            user1.introduction,
+            user1.avatar,
+            user1.dept_id,
+            user1.telephone,
+            user1.email,
+            user1.login_time  ulogin_time,
+            user1.create_time  ucreate_time,
+            user1.update_time  uupdate_time,
+            user1.del_flag  udel_flag,
+            user1.dept_id  deptId,
+            user1.parent_id,
+            user1.customer_id  customerId,
+            r.role_id,
+            r.role_name,
+            r.role_code,
+            r.role_desc,
+            r.role_level,
+            r.create_time  rcreate_time,
+            r.update_time  rupdate_time
+        FROM
+            sys_user  user1
+            LEFT JOIN sys_user_role  ur ON ur.user_id = user1.user_id
+            LEFT JOIN sys_role  r ON r.role_id = ur.role_id
+    </sql>
+
+    <select id="selectUserVoByUsername" resultMap="userVoResultMap">
+        <include refid="selectUserVo"/>
+        WHERE user1.username = #{username} and user1.del_flag = 0
+    </select>
+
+    <select id="selectUserVoByNameOrCall" resultMap="userVoResultMap">
+        <include refid="selectUserVo"/>
+        WHERE (user1.username = #{name} OR user1.telephone = #{name}) and user1.del_flag = 0
+    </select>
+    <select id="selectUserVoByMobile" resultMap="userVoResultMap">
+        <include refid="selectUserVo"/>
+        WHERE user1.introduction = #{mobile} and user1.del_flag = 0
+    </select>
+
+    <select id="selectUserVoByOpenId" resultMap="userVoResultMap">
+        <include refid="selectUserVo"/>
+        WHERE user1.salt = #{openId} and  user1.del_flag = 0
+    </select>
+
+    <select id="selectUserVoById" resultMap="userVoForAdminResultMap">
+         SELECT
+        user1.user_id,
+        user1.username,
+        user1.nickname,
+        user1.salt,
+        user1.introduction,
+        user1.avatar,
+        user1.telephone,
+        user1.email,
+        user1.login_time  ulogin_time,
+        user1.create_time  ucreate_time,
+        user1.update_time  uupdate_time,
+        user1.del_flag  udel_flag,
+        user1.parent_id,
+        r.role_id,
+        r.role_name,
+        r.role_code,
+        r.role_desc,
+        r.role_level,
+        r.create_time  rcreate_time,
+        r.update_time  rupdate_time,
+        d.name  deptName,
+        d.dept_id  deptId,
+        b.customer_id,
+        b.customer_name
+        FROM
+        sys_user  user1
+        LEFT JOIN sys_user_role  ur ON ur.user_id = user1.user_id
+        LEFT JOIN sys_role  r ON r.role_id = ur.role_id
+        LEFT JOIN sys_dept  d ON d.dept_id = user1.dept_id
+        LEFT JOIN biz_customer  b ON b.customer_id = user1.customer_id
+        WHERE
+           user1.user_id = #{id}
+    </select>
+
+
+    <select id="selectUserVoByCustomerId" resultMap="userVoForAdminResultMap" >
+        SELECT
+        user1.user_id,
+        user1.username,
+        user1.nickname,
+        user1.password,
+        user1.salt,
+        user1.customer_id,
+        user1.introduction,
+        user1.avatar,
+        user1.telephone,
+        user1.email,
+        user1.login_time  ulogin_time,
+        user1.create_time  ucreate_time,
+        user1.update_time  uupdate_time,
+        user1.del_flag  udel_flag,
+        user1.parent_id,
+        r.role_id,
+        r.role_name,
+        r.role_code,
+        r.role_desc,
+        r.role_level,
+        r.create_time  rcreate_time,
+        r.update_time  rupdate_time,
+        d.name  deptName,
+        d.dept_id  deptId,
+        b.customer_id,
+        b.customer_name
+        FROM
+        sys_user  user1
+        LEFT JOIN sys_user_role  ur ON ur.user_id = user1.user_id
+        LEFT JOIN sys_role  r ON r.role_id = ur.role_id
+        LEFT JOIN sys_dept  d ON d.dept_id = user1.dept_id
+        LEFT JOIN biz_customer  b ON b.customer_id = user1.customer_id
+        WHERE user1.del_flag = 0
+        <if test="_parameter != 0">
+            AND user1.customer_id = #{customerId}
+        </if>
+        ORDER BY ucreate_time DESC
+    </select>
+
+    <select id="selectUserVoPageDataScope" resultMap="userVoResultMap" >
+        SELECT
+        user1.user_id,
+        user1.username,
+        user1.nickname,
+        user1.password,
+        user1.salt,
+        user1.introduction,
+        user1.avatar,
+        user1.telephone,
+        user1.email,
+        user1.login_time  ulogin_time,
+        user1.create_time  ucreate_time,
+        user1.update_time  uupdate_time,
+        user1.del_flag  udel_flag,
+        user1.parent_Id,
+        r.role_id,
+        r.role_name,
+        r.role_code,
+        r.role_desc,
+        r.role_level,
+        r.create_time  rcreate_time,
+        r.update_time  rupdate_time,
+        d.name  deptName,
+        d.dept_id  deptId
+        FROM
+        sys_user  user1
+        LEFT JOIN sys_user_role  ur ON ur.user_id = user1.user_id
+        LEFT JOIN sys_role  r ON r.role_id = ur.role_id
+        LEFT JOIN sys_dept  d ON d.dept_id = user1.dept_id
+        WHERE
+        user1.del_flag =0
+        <if test="username != null and username != ''">
+            and user1.username LIKE CONCAT('%',#{username},'%')
+        </if>
+        and user1.user_Id IN
+        <foreach collection="list" item="userId" index="index" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+    <select id="selectUserVoPageForAdmin" resultMap="userVoForAdminResultMap" >
+        SELECT
+        user1.user_id,
+        user1.username,
+        user1.nickname,
+        user1.password,
+        user1.salt,
+        user1.introduction,
+        user1.avatar,
+        user1.telephone,
+        user1.email,
+        user1.login_time  ulogin_time,
+        user1.create_time  ucreate_time,
+        user1.update_time  uupdate_time,
+        user1.del_flag  udel_flag,
+        user1.parent_id,
+        user1.customer_id,
+        r.role_id,
+        r.role_name,
+        r.role_code,
+        r.role_desc,
+        r.role_level,
+        r.create_time  rcreate_time,
+        r.update_time  rupdate_time,
+        d.name  deptName,
+        d.dept_id  deptId,
+        -- b.customer_id,
+        b.customer_name
+        FROM
+        sys_user  user1
+        LEFT JOIN sys_user_role  ur ON ur.user_id = user1.user_id
+        LEFT JOIN sys_role  r ON r.role_id = ur.role_id
+        LEFT JOIN sys_dept  d ON d.dept_id = user1.dept_id
+        LEFT JOIN biz_customer  b ON b.customer_id = user1.customer_id
+        WHERE
+        r.role_level > #{roleLevel}
+        <if test="customerId !='0'.toString()">
+            AND user1.customer_id = #{customerId}
+        </if>
+        <if test="username != null and username != ''">
+            AND user1.username LIKE CONCAT('%',#{username},'%')
+        </if>
+        <if test="delFlag != null and delFlag != ''">
+            AND user1.del_flag = #{delFlag}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            <choose>
+                <when test="_databaseId=='mysql'">
+                    AND CONCAT( IFNULL(user1.username,''), IFNULL(user1.nickname,''),
+                    IFNULL(user1.telephone,''),IFNULL(user1.email,''))
+                </when>
+                <when test="_databaseId=='oracle'">
+                    AND (nvl(user1.username,'') || nvl(user1.nickname,'') || nvl(user1.telephone,'') || nvl(user1.email,''))
+                </when>
+            </choose>
+            LIKE #{pattern}
+        </if>
+        ORDER BY ucreate_time DESC
+    </select>
+
+    <select id="selectUserVoAndRoomResult" resultMap="userVoAndRoomResultMap" >
+        SELECT
+        user1.user_id,
+        user1.username,
+        user1.nickname,
+        user1.password,
+        user1.salt,
+        user1.introduction,
+        user1.avatar,
+        user1.telephone,
+        user1.email,
+        user1.login_time  ulogin_time,
+        user1.create_time  ucreate_time,
+        user1.update_time  uupdate_time,
+        user1.del_flag  udel_flag,
+        user1.parent_id,
+        user1.customer_id  customerId,
+         r.room_id,
+         r.customer_id,
+         r.room_no,
+         r.del_flag
+        FROM
+        sys_user  user1
+        LEFT JOIN biz_room  r ON r.customer_Id = user1.customer_Id
+        WHERE
+        user1.del_flag = 0
+        and r.del_flag = 0
+        and user1.username = #{username}
+    </select>
+
+
+    <select id="selectSysUserByUsername" resultType="com.github.pig.admin.model.entity.SysUser">
+        SELECT * FROM
+        sys_user  user1
+        WHERE user1.username = #{username} and user1.del_flag = 0
+    </select>
+</mapper>

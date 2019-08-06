@@ -1,0 +1,69 @@
+server:
+  port: 4020
+spring:
+  application:
+    name: pig-auth
+  profiles:
+    active: dev
+  cloud:
+    config:
+      fail-fast: true
+      discovery:
+        service-id: pig-config-server
+        enabled: true
+      profile: dev
+      label: ${spring.profiles.active}
+logging:
+  config: file:./config/logback/logback_auth.xml
+---
+spring:
+  profiles: dev
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 3 #客户端每隔n秒向服务端发送数据包
+    lease-expiration-duration-in-seconds: 7 # 客户端告知服务端：若在n秒内没有向服务器发送信息，则服务端将其从服务列表中删除
+    prefer-ip-address: true
+    metadata-map:
+      zone: zone-1
+  client:
+    registry-fetch-interval-seconds: 5 #定时的向Eureka确认，刷新自己的可用的服务列表，修改为5s，从服务失效到客户端发现最多7+5=12s
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+
+---
+spring:
+  profiles: prd
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+
+---
+spring:
+  profiles: moreService
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 3 #客户端每隔n秒向服务端发送数据包
+    lease-expiration-duration-in-seconds: 7 # 客户端告知服务端：若在n秒内没有向服务器发送信息，则服务端将其从服务列表中删除
+    prefer-ip-address: true
+    metadata-map:
+      zone: zone-1
+  client:
+    registry-fetch-interval-seconds: 5 #定时的向Eureka确认，刷新自己的可用的服务列表，修改为5s，从服务失效到客户端发现最多7+5=12s
+    fetch-registry: true
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1 #,zone-2
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+      #zone-2: http://imeeting:imeeting123@localhost:5010/eureka

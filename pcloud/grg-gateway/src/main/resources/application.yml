@@ -1,0 +1,151 @@
+http:
+  port: 9010
+
+server:
+  port: 9013
+  ssl:
+    enabled: true
+    key-store: classpath:openvidu-selfsigned.jks
+    key-store-password: openvidu
+    key-store-type: JKS
+    key-alias: openvidu-selfsigned
+
+spring:
+  application:
+    name: grg-gateway
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+  redis:
+      #数据库索引
+    database: 0
+    host: imeeting-redis
+    port: 6379
+    password:
+    jedis:
+      pool:
+        #最大连接数
+        max-active: 8
+        #最大阻塞等待时间(负数表示没限制)
+        max-wait: -1
+        #最大空闲
+        max-idle: 8
+        #最小空闲
+        min-idle: 0
+      #连接超时时间
+    timeout: 10000
+   #未使用redis管理session
+  session:
+    store-type: none
+
+#spring.rabbitmq.listener.direct.retry.enabled=true
+#spring.rabbitmq.listener.simple.retry.enabled=true
+  rabbitmq:
+    host: imeeting-rabbitmq
+    port: 5672
+    username: admin
+    password: admin
+#    listener:
+#      direct:
+#        retry:
+#          enabled: true
+#      simple:
+#        retry:
+#          enabled: true
+  zipkin:
+    rabbitmq:
+      queue: zipkin
+  sleuth:
+    sampler:
+      percentage: 1.0
+
+#feign开启hystrix机制
+feign:
+  hystrix:
+    enabled: true
+
+#打开management所有端点
+management.endpoints.web.exposure.include: '*'
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 3 #客户端每隔n秒向服务端发送数据包
+    lease-expiration-duration-in-seconds: 7 # 客户端告知服务端：若在n秒内没有向服务器发送信息，则服务端将其从服务列表中删除
+  client:
+    fetchRegistry: true
+    registry-fetch-interval-seconds: 5 #定时的向Eureka确认，刷新自己的可用的服务列表，修改为5s，从服务失效到客户端发现最多7+5=12s
+
+logging:
+  config: file:./config/logback/logback_gateway.xml
+#logging:
+#  level:
+#    org.springframework.cloud.gateway: DEBUG
+#    org.springframework.http.server.reactive: INFO
+#    org.springframework.web.reactive: INFO
+#    reactor.ipc.netty: INFO
+
+#cloud:
+#  gateway:
+#    globalcors:
+#      corsConfigurations:
+#        '[/**]':
+#          allowedOrigins: "*"
+#          allowedMethods:
+#          - GET
+#          - POST
+
+swagger.show: true
+
+---
+spring:
+  profiles: dev
+  cloud:
+    loadbalancer:
+      retry:
+        enabled: true
+eureka:
+  metadata-map:
+    zone: zone-1
+  client:
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+
+ribbon:
+  ConnectTimeout: 250 #单位ms,请求连接超时时间
+  ReadTimeout: 1000 #单位ms,请求处理的超时时间
+  OkToRetryOnAllOperations: true #对所有操作请求都进行重试
+  MaxAutoRetriesNextServer: 2 #切换实例的重试次数
+  MaxAutoRetries: 1 #对当前实例的重试次数
+
+---
+spring:
+  profiles: moreService
+  cloud:
+    loadbalancer:
+      retry:
+        enabled: true
+eureka:
+  metadata-map:
+    zone: zone-1
+  client:
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1 #,zone-2
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka
+      # zone-2: http://imeeting:imeeting123@localhost:5010/eureka
+ribbon:
+  ConnectTimeout: 250 #单位ms,请求连接超时时间
+  ReadTimeout: 1000 #单位ms,请求处理的超时时间
+  OkToRetryOnAllOperations: true #对所有操作请求都进行重试
+  MaxAutoRetriesNextServer: 2 #切换实例的重试次数
+  MaxAutoRetries: 1 #对当前实例的重试次数

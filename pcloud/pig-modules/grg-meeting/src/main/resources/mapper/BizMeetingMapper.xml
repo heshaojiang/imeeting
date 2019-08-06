@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.pig.admin.mapper.BizMeetingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.pig.admin.model.entity.BizMeeting">
+        <id column="id" property="id" />
+        <result column="meeting_id" property="meetingId" />
+        <result column="meeting_mid" property="meetingMid" />
+        <result column="meeting_type" property="meetingType" />
+        <result column="meeting_name" property="meetingName" />
+        <result column="compere" property="compere" />
+        <result column="compere_id" property="compereId" />
+        <result column="num_video" property="numVideo" />
+        <result column="num_join" property="numJoin" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="status" property="status" />
+        <result column="del_flag" property="delFlag" />
+        <result column="meeting_pwd" property="meetingPwd" />
+        <result column="compere_pwd" property="comperePwd" />
+        <result column="created_time" property="createdTime" />
+        <result column="real_start_time" property="realStartTime" />
+        <result column="real_end_time" property="realEndTime" />
+        <result column="video_loop_time" property="videoLoopTime" />
+        <result column="video_loop_type" property="videoLoopType" />
+        <result column="split_type" property="splitType" />
+        <result column="extern_configs" property="externConfigs" />
+    </resultMap>
+    <!--MeetingVo结果集 -->
+    <resultMap id="MeetingVoResultMap" type="com.github.pig.common.vo.MeetingVo">
+        <id column="id" property="id" />
+        <result column="meeting_id" property="meetingId" />
+        <result column="meeting_mid" property="meetingMid" />
+        <result column="customer_id" property="customerId" />
+        <result column="meeting_type" property="meetingType" />
+        <result column="meeting_name" property="meetingName" />
+        <result column="compere" property="compere" />
+        <result column="compere_id" property="compereId" />
+        <result column="num_video" property="numVideo" />
+        <result column="num_join" property="numJoin" />
+        <result column="created_time" property="createdTime" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="status" property="status" />
+        <result column="del_flag" property="delFlag" />
+        <result column="meeting_pwd" property="meetingPwd" />
+        <result column="compere_pwd" property="comperePwd" />
+        <result column="real_start_time" property="realStartTime" />
+        <result column="real_end_time" property="realEndTime" />
+        <result column="video_loop_time" property="videoLoopTime" />
+        <result column="video_loop_type" property="videoLoopType" />
+        <result column="split_type" property="splitType" />
+        <result column="extern_configs" property="externConfigs" />
+
+        <collection property="ParticipantList"
+                           select="com.github.pig.admin.mapper.BizMeetingParticipantMapper.selectParticipantByMid"
+                           column="{meetingMid=meeting_mid}">
+
+        </collection>
+
+        <collection property="ParticipantPlanList"
+                   select="com.github.pig.admin.mapper.BizMeetingParticipantPlanMapper.selectParticipantPlanByMid"
+                   column="{meetingMid=meeting_mid}">
+
+        </collection>
+
+        <!--
+               <collection property="ParticipantList" ofType="com.github.pig.common.vo.MeetingParticipant">
+                   <id column="pId" property="id" />
+                   <result column="mute_mic" property="muteMic" />
+                   <result column="meeting_id" property="meetingId"/>
+                   <result column="nickname" property="nickname"/>
+                   <result column="meeting_pmid" property="meetingMid"/>
+                   <result column="latest_hbtime" property="latestHbTime"/>
+                   <result column="joined_time" property="joinedTime"/>
+                   <result column="pstatus" property="status"/>
+                   <result column="update_Time" property="updateTime"/>
+                   <result column="del_pflag" property="delFlag"/>
+               </collection>
+               <collection property="ParticipantPlanList" ofType="com.github.pig.common.vo.MeetingParticipantPlan">
+                   <id column="ppId" property="id" />
+                   <result column="user_id" property="user_id"/>
+                   <result column="join_type" property="join_type"/>
+               </collection>
+        -->
+    </resultMap>
+    <!-- 通用查询结果列 -->
+
+    <sql id="selectMeeting">
+        SELECT
+        id, meeting_id, customer_id, meeting_mid, meeting_type, meeting_name, compere, compere_id, num_video, num_join,
+        created_time, start_time, end_time, status, del_flag, meeting_pwd, compere_pwd, real_start_time, real_end_time,
+        video_loop_time, video_loop_type, split_type, extern_configs
+        FROM
+        biz_meeting  bm
+    </sql>
+    <select id="SelectVoById" resultMap="MeetingVoResultMap">
+        <include refid="selectMeeting"/>
+        WHERE del_flag = 0 AND id = #{id}
+    </select>
+    <!-- 正在进行的会议-->
+    <select id="findByMeetingId" resultMap="BaseResultMap">
+        <include refid="selectMeeting"/>
+        WHERE status = 0 AND del_flag = 0 AND meeting_id = #{meetingId}
+    </select>
+
+    <select id="findBizMeetingByTime" resultMap="BaseResultMap">
+        SELECT * FROM biz_meeting
+        WHERE created_time
+        <![CDATA[<]]>
+        #{createdTime}
+    </select>
+
+    <select id="findBizMeetingIsNull" resultMap="BaseResultMap">
+        SELECT * FROM biz_meeting
+        WHERE created_time is NULL
+    </select>
+
+    <select id="findMeetingVoByMeetingId" resultMap="MeetingVoResultMap">
+        <include refid="selectMeeting"/>
+        WHERE bm.meeting_id = #{meetingId} AND bm.del_flag = 0 and bm.status = 0
+    </select>
+
+    <select id="selectMeetingPage" resultMap="MeetingVoResultMap" databaseId="mysql">
+        <include refid="selectMeeting"/>
+        WHERE 0=0
+        <if test="customerId !='0'.toString()">
+            AND bm.customer_id = #{customerId}
+        </if>
+        <if test="delFlag != null and delFlag != ''">
+            AND bm.del_flag = #{delFlag}
+        </if>
+        <if test="meetingId != null and meetingId != ''">
+            AND bm.meeting_id LIKE CONCAT('%',#{meetingId},'%')
+        </if>
+        <if test="meetingType != null and meetingType != ''">
+            AND bm.meeting_type LIKE CONCAT('%',#{meetingType},'%')
+        </if>
+        <if test="status != null and status != ''">
+            AND bm.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            AND CONCAT(
+            IFNULL(bm.meeting_id,''),IFNULL(bm.meeting_name,'')) LIKE
+            #{pattern}
+        </if>
+        ORDER BY created_time DESC
+    </select>
+
+    <select id="selectMeetingPage" resultMap="MeetingVoResultMap" databaseId="oracle">
+        <include refid="selectMeeting"/>
+        WHERE 0=0
+        <if test="customerId !='0'.toString()">
+            AND bm.customer_id = #{customerId}
+        </if>
+        <if test="delFlag != null and delFlag != ''">
+            AND bm.del_flag = #{delFlag}
+        </if>
+        <if test="meetingId != null and meetingId != ''">
+            AND bm.meeting_id LIKE CONCAT('%',#{meetingId},'%')
+        </if>
+        <if test="meetingType != null and meetingType != ''">
+            AND bm.meeting_type LIKE CONCAT('%',#{meetingType},'%')
+        </if>
+        <if test="status != null and status != ''">
+            AND bm.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            AND CONCAT(
+            nvl(bm.meeting_id,''),nvl(bm.meeting_name,'')) LIKE
+            #{pattern}
+        </if>
+        ORDER BY created_time DESC
+    </select>
+
+    <select id="selectMeetingWithUserID" resultMap="MeetingVoResultMap">
+        <include refid="selectMeeting"/>
+        WHERE 0=0
+        <if test="delFlag != null and delFlag != ''">
+            AND bm.del_flag = #{delFlag}
+        </if>
+        AND
+        EXISTS(select id from biz_meeting_participant_plan as bmpp where bm.meeting_mid = bmpp.meeting_mid
+        <if test="customerId !='0'.toString()">
+        and bmpp.user_id=#{userId}
+        </if>
+        )
+    </select>
+
+    <select id="selectMeetingNoParticipant" resultMap="MeetingVoResultMap">
+        <include refid="selectMeeting"/>
+        WHERE 0=0
+        <if test="customerId !='0'.toString()">
+            AND bm.customer_id = #{customerId}
+        </if>
+        <if test="delFlag != null and delFlag != ''">
+            AND bm.del_flag = #{delFlag}
+        </if>
+        AND
+        NOT EXISTS(select id from biz_meeting_participant_plan as bmpp where bm.meeting_mid = bmpp.meeting_mid)
+    </select>
+
+    <!--<insert id="insert">-->
+       <!--INSERT INTO biz_meeting(meeting_id, start_time) VALUES(#{meetingId}, #{startTime})-->
+    <!--</insert>-->
+
+    <update id="updateCompere">
+        UPDATE biz_meeting set compere=#{compere} WHERE meeting_id=#{meetingId}
+    </update>
+</mapper>

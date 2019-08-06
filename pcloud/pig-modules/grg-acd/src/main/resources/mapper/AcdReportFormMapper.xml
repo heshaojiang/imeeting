@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.grgbanking.grgacd.mapper.AcdReportFormMapper">
+    <sql id="selectCountSql">
+      SELECT count(id) as answerTimeSum,
+      date_format(makecall_time,'%k:00') AS intervalTime
+      FROM acd_calls
+
+    </sql>
+    <sql id="receivecall">
+        SELECT
+        count( id ) AS answerTimesum,
+        to_char( makecall_time,'hh24' )   intervalTime
+        FROM
+        acd_calls
+    </sql>
+    <sql id="wechat"> select count(id) as wechatSum from acd_calls where caller_platformtype='weixin'</sql>
+    <sql id="imeeting">  select count(id) as wechatSum from acd_calls where caller_platformtype='imeeting'</sql>
+    <sql id="solve">  select count(id) as solveSum from acd_evaluation where result_type='1'</sql>
+    <sql id="unsolve"> select count(id) as nosolveSum from acd_evaluation where result_type='0'</sql>
+    <sql id="evalue">
+        SELECT
+            score.name AS NAME,
+            count(score.name) AS total
+        FROM
+            acd_evaluation evaluate
+        LEFT JOIN acd_evaluation_score score ON evaluate.score_id = score.id
+        GROUP BY
+            score.name
+    </sql>
+    <sql id="agentInfo">
+        FROM
+        acd_calls calls
+        INNER JOIN sys_user ON agent_id = sys_user.user_id
+        WHERE
+        agent_id IS NOT NULL
+        AND answer_time IS NOT NULL
+        AND call_status = 'HANGUP'
+        GROUP BY
+        agent_id,
+        username
+    </sql>
+
+    <!-- 统计通话总数 -->
+    <resultMap id="countSessionMap" type="java.util.HashMap">
+        <result column="intervalTime" property="key"></result>
+        <result column="answerTimeSum" property="value"></result>
+    </resultMap>
+
+    <resultMap id="countSatisfiedMap" type="com.grgbanking.grgacd.vo.ReportVo">
+        <result column="name" property="item"></result>
+        <result column="total" property="count"></result>
+    </resultMap>
+
+
+    <resultMap id="agentInfoMap" type="com.grgbanking.grgacd.vo.AgentInfoVo">
+        <result property="agentId" column="agent_id"></result>
+        <result property="userName" column="username"></result>
+        <result property="serviceCount" column="service_count"></result>
+        <result property="totalServiceTime" column="total_service_time"></result>
+        <result property="avgResponseTime" column="avg_response_time"></result>
+        <result property="avgServiceTime" column="avg_service_time"></result>
+        <!--<result property="statusTime" column="status_time"></result>-->
+        <!--<result property="lastStatusTime" column="last_status_time"></result>-->
+
+    </resultMap>
+    <resultMap id="reportMap" type="java.lang.Integer">
+        <result column="count" property="value"></result>
+    </resultMap>
+
+    <resultMap id="callResultMap" type="com.grgbanking.grgacd.model.AcdCalls">
+        <id column="id" property="id"></id>
+        <result column="call_id" property="callId"></result>
+        <result column="caller_id" property="callerId"></result>
+        <result column="caller_name" property="callerName"></result>
+        <result column="call_status" property="callStatus"></result>
+        <result column="queue_id" property="queueId"></result>
+        <result column="agent_id" property="agentId"></result>
+        <result column="makecall_time" property="makecallTime"></result>
+        <result column="answer_time" property="answerTime"></result>
+        <result column="hangup_time" property="hangupTime"></result>
+        <result column="recorder_video_status" property="recorderVideoStatus"></result>
+        <result column="recorder_video_filepath" property="recorderVideoFilepath"></result>
+        <result column="recorder_audio_status" property="recorderAudioStatus"></result>
+        <result column="recorder_audio_filepath" property="recorderAudioFilepath"></result>
+        <result column="recorder_preview_filepath" property="recorderPreviewFilepath"></result>
+        <result column="recorder_chat" property="recorderChat"></result>
+        <result column="created_time" property="createdTime"></result>
+        <result column="update_time" property="updateTime"></result>
+        <result column="del_time" property="delTime"></result>
+        <result column="del_flag" property="delFlag"></result>
+        <association property="agent" column="agent_id" select="com.grgbanking.grgacd.mapper.SysUserMapper.selectById">
+        </association>
+        <association property="queue" column="queue_id"
+                     select="com.grgbanking.grgacd.mapper.AcdQueueMapper.selectById"></association>
+    </resultMap>
+
+    <!-- 统计已接听通话数量-->
+    <select id="getCountReceive" resultMap="countSessionMap" databaseId="mysql">
+        <include refid="selectCountSql" />
+        <where>
+            <if test="date!=null and date !=''">
+                to_days(#{date}) = TO_DAYS(makecall_time)
+            </if>
+            <if test="date==null or date==''">
+                to_days(NOW()) = TO_DAYS(makecall_time)
+            </if>
+             and answer_time IS NOT NULL
+        </where>
+        group by intervalTime
+    </select>
+
+    <select id="getCountReceive" resultMap="countSessionMap" databaseId="oracle">
+        <include refid="receivecall"></include>
+        <where>
+            <if test="date!=null and date !=''">
+                to_char(#{date},'yyyy-mm-dd') = to_char  (makecall_time)
+            </if>
+            <if test="date==null or date==''">
+                to_char(SYSDATE,'yyyy-mm-dd hh24:mi:ss') = to_char( makecall_time,'yyyy-mm-dd hh24:mi:ss' )
+            </if>
+            AND answer_time IS NOT NULL
+        </where>
+        GROUP BY
+        to_char( makecall_time,'hh24' )
+
+    </select>
+
+    <!-- 统计未接听通话数量-->
+    <select id="getCountNotReceive" resultMap="countSessionMap" databaseId="mysql">
+        <include refid="selectCountSql" />
+        <where>
+            <if test="date!=null and date !=''">
+                to_days(#{date}) = TO_DAYS(makecall_time)
+            </if>
+            <if test="date==null or date==''">
+                to_days(NOW()) = TO_DAYS(makecall_time)
+            </if>
+             and answer_time IS  NULL
+        </where>
+        group by intervalTime
+    </select>
+
+    <select id="getCountNotReceive" resultMap="countSessionMap" databaseId="oracle">
+      <include refid="receivecall"></include>
+        <where>
+           <if test="date!=null and date !=''">
+               to_char(#{date},'yyyy-mm-dd') = to_char  (makecall_time)
+           </if>
+           <if test="date==null or date==''">
+            to_char(SYSDATE,'yyyy-mm-dd hh24:mi:ss') = to_char( makecall_time,'yyyy-mm-dd hh24:mi:ss' )
+           </if>
+            AND answer_time IS NULL
+        </where>
+        GROUP BY
+        to_char( makecall_time,'hh24' )
+    </select>
+
+
+    <select id="countWeChatSum" resultType="java.lang.Integer" databaseId="mysql">
+      <include refid="wechat"></include>
+    </select>
+
+    <select id="countWeChatSum" resultType="java.lang.Integer" databaseId="oracle">
+        <include refid="wechat"></include>
+    </select>
+
+    <select id="countImeetingSum" resultType="java.lang.Integer" databaseId="mysql">
+      <include refid="imeeting"></include>
+    </select>
+
+    <select id="countImeetingSum" resultType="java.lang.Integer" databaseId="oracle">
+        <include refid="imeeting"></include>
+    </select>
+
+    <select id="countSolveSum" resultType="java.lang.Integer" databaseId="mysql">
+     <include refid="solve"></include>
+    </select>
+
+    <select id="countSolveSum" resultType="java.lang.Integer" databaseId="oracle">
+        <include refid="solve"></include>
+    </select>
+
+    <select id="countUnSolveSum" resultType="java.lang.Integer" databaseId="mysql">
+     <include refid="unsolve"></include>
+    </select>
+
+    <select id="countUnSolveSum" resultType="java.lang.Integer" databaseId="oracle">
+        <include refid="unsolve"></include>
+    </select>
+
+   <select id="countSatisfied" resultMap="countSatisfiedMap" databaseId="mysql">
+       <include refid="evalue"></include>
+    </select>
+
+    <select id="countSatisfied" resultMap="countSatisfiedMap" databaseId="oracle">
+        <include refid="evalue"></include>
+    </select>
+
+    <select id="getAgentInfo" resultMap="agentInfoMap" databaseId="mysql">
+       SELECT
+            agent_id,
+            sys_user.username,
+            count( agent_id ) service_count,
+            SUM( TIMESTAMPDIFF( SECOND, answer_time, hangup_time ) ) AS total_service_time,
+            AVG( TIMESTAMPDIFF( SECOND, answer_time, hangup_time ) ) AS avg_service_time,
+            ( SELECT AVG( TIMESTAMPDIFF( SECOND, select_time, answer_time ) ) FROM acd_calls WHERE agent_id = calls.agent_id GROUP BY agent_id ) AS avg_response_time
+        <include refid="agentInfo"></include>
+    </select>
+
+    <select id="getAgentInfo" resultMap="agentInfoMap" databaseId="oracle">
+        SELECT
+        agent_id,
+        username,
+        COUNT( agent_id )  service_count,
+        SUM( Round(To_number(To_date( To_char( hangup_time, 'yyyy-mm-dd hh24:mi:ss' ), 'yyyy-mm-dd hh24:mi:ss' ) - To_date( To_char( answer_time, 'yyyy-mm-dd hh24:mi:ss' ), 'YYYY-MM-DD HH24:mi:ss' )) * 24 * 60 * 60
+        )) AS total_service_time ,
+        AVG(Round(To_number(To_date( To_char( hangup_time, 'yyyy-mm-dd hh24:mi:ss' ), 'yyyy-mm-dd hh24:mi:ss' ) - To_date( To_char( answer_time, 'yyyy-mm-dd hh24:mi:ss' ), 'YYYY-MM-DD HH24:mi:ss' )) * 24 * 60 * 60
+        )) AS avg_service_time,
+        (SELECT AVG(Round(To_number(To_date( To_char( answer_time, 'yyyy-mm-dd hh24:mi:ss' ), 'yyyy-mm-dd hh24:mi:ss' ) - To_date( To_char( select_time, 'yyyy-mm-dd hh24:mi:ss' ), 'YYYY-MM-DD HH24:mi:ss' )) * 24 * 60 * 60 ) )
+        FROM acd_calls WHERE agent_id = calls.agent_id GROUP BY agent_id ) AS avg_response_time
+      <include refid="agentInfo"></include>
+    </select>
+
+
+</mapper>

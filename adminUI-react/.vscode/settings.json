@@ -1,0 +1,6 @@
+{
+  "svn.ignoreWorkingCopyIsTooOld": true,
+  "svn.delete.ignoredRulesForDeletedFiles": [
+    ".temp/ant-design-pro.less"
+  ]
+}

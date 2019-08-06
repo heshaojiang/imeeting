@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: imeeting
+    password: grg@123
+    url: jdbc:mysql://imeeting-db:3306/imeeting?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+
+#上传文件保存的路径
+config:
+  fileSavePath: /opt/iMeeting/uploadfiles/
+  fileTempPath: /opt/iMeeting/uploadfiles_temp/
+
+swagger.show: true

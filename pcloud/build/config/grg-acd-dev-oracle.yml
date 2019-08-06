@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@imeeting-db-oracle:1521:orcl
+    username: imeeting
+    password: grg@123

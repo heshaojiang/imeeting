@@ -1,0 +1,16 @@
+export default{
+  'app.acd.report.evaluateData':'Evaluate Report',
+  'app.acd.report.callData':'Call Report',
+  'app.acd.report.agentData':'Agent Data',
+  'app.acd.report.statistic.hour':'Statistic Hour',
+  'app.acd.report.statistic.day':'Statistic Day',
+  'app.acd.report.receive':'Receive',
+  'app.acd.report.noreceive':'NoReceive',
+  'app.acd.report.success':'Success',
+  'app.acd.report.timeout':'Timeout',
+  'app.acd.report.other':'Other',
+  'app.acd.report.solve':'Solved',
+  'app.acd.report.unsolve':'Unsolved',
+  'app.acd.report.imeeting':'iMeeting',
+  'app.acd.report.weixin':'Wechat',
+}

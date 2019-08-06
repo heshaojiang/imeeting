@@ -1,0 +1,112 @@
+
+#Redis cache 过期时间设置
+redis:
+  cache:
+    expiration: 3600
+
+spring:
+  rabbitmq:
+    host: imeeting-rabbitmq
+    port: 5672
+    username: admin
+    password: admin
+#  zipkin:
+#    rabbitmq:
+#      queue: zipkin
+  sleuth:
+    sampler:
+      percentage: 1.0
+
+# datasoure默认使用JDBC
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: imeeting
+    password: grg@123
+    url: jdbc:mysql://imeeting-db:3306/imeeting?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+
+# 分库分表支持
+#sharding:
+#  jdbc:
+#    defaultDataSourceName:
+#      type: com.zaxxer.hikari.HikariDataSource
+#      driver-class-name: com.mysql.jdbc.Driver
+#      username: imeeting
+#      password: grg@123
+#      jdbc-url: jdbc:mysql://imeeting-db:3306/imeeting?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+#    datasource:
+#      names: ds
+#      ds:
+#        type: com.zaxxer.hikari.HikariDataSource
+#        driver-class-name: com.mysql.jdbc.Driver
+#        username: imeeting
+#        password: grg@123
+#        jdbc-url: jdbc:mysql://imeeting-db:3306/imeeting?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+#    config:
+#      sharding:
+#        tables:
+#          sys_log:
+#            actual-data-nodes: ds.sys_log_${0..1}
+#            table-strategy:
+#              inline:
+#                sharding-column: id
+#                algorithm-expression: sys_log_${id % 2}
+#            key-generator-column-name: id
+
+#mybaits-plus配置，修改主键类型，mapper.xml、type 别名等
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  typeAliasesPackage: com.github.pig.admin.model.entity
+  global-config:
+    #主键类型  0:"数据库ID自增", 1:"用户输入ID",2:"全局唯一ID (数字类型唯一ID)", 3:"全局唯一ID UUID";
+    id-type: 0
+    #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
+    field-strategy: 1
+    #驼峰下划线转换
+    db-column-underline: true
+    #刷新mapper 调试神器
+    refresh-mapper: true
+    #数据库大写下划线转换
+    #capital-mode: true
+    #逻辑删除配置
+    logic-delete-value: 1
+    logic-not-delete-value: 0
+    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    #sql执行语句控制台打印
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+##认证服务器地址
+#security:
+#  auth:
+#    server: http://imeeting-auth:4020
+
+# spring security 配置
+#security:
+#  oauth2:
+#    resource:
+#      loadBalanced: true
+#      token-info-uri: pig-auth/oauth/check-token
+#    client:
+#      client-id: admin
+#      client-secret: admin
+
+urls:
+  anon:
+    - /mobile/**
+    - /auth/**
+    - /admin/code/*
+    - /admin/smsCode/*
+    - /admin/user/info
+    - /admin/menu/userTree
+    - /swagger-resources/**
+    - /swagger-ui.html
+    - /v2/api-docs
+    - /swagger/api-docs
+    - /webjars/**
+    - /user/findUserByUsername/**
+    - /user/updateLoginTimeByUserId/**
+    - /v1/meeting/**
+
+gatewayws.websocket.url: imeeting-public-url

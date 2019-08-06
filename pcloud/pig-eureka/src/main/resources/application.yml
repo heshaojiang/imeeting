@@ -1,0 +1,65 @@
+server:
+  port: 4010
+
+spring:
+  application:
+    name: imeeting-eureka
+  profiles:
+    active: dev
+
+security:
+  basic:
+    enabled: true # 启用身份认证
+  user:
+    name: imeeting # 定义用户名
+    password: imeeting123 # 定义密码
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: imeeting-eureka #对于同一台必须设置不同
+    prefer-ip-address: false #如果用同一台服务器做高可用，必须设置成false，并设置不同的host
+  server:  #配置属性，但由于 Eureka 自我保护模式以及心跳周期长的原因，经常会遇到 Eureka Server 不剔除已关停的节点的问题
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000 #扫描失效服务的间隔时间
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+logging:
+  level:
+    com.netflix.eureka.registry.AbstractInstanceRegistry: ERROR
+
+---
+spring:
+  profiles: dev
+eureka:
+  client:
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1
+    service-url:
+      zone-1: http://imeeting:imeeting123@${eureka.instance.hostname}:${server.port}/eureka/  #每个必须加带上用户名和密码
+---
+spring:
+  profiles: moreService
+eureka:
+  instance:
+    #lease-renewal-interval-in-seconds: 5
+    #lease-expiration-duration-in-seconds: 10
+  client:
+    prefer-same-zone-eureka: true
+    #地区
+    region: guangzhou
+    availability-zones:
+      guangzhou: zone-1 #,zone-2
+    service-url:
+      zone-1: http://imeeting:imeeting123@imeeting-eureka:4010/eureka/  #每个必须加带上用户名和密码
+      #zone-2: http://imeeting:imeeting123@localhost:5010/eureka/
+

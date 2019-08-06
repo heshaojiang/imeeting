@@ -1,0 +1,16 @@
+export default{
+  'app.acd.report.evaluateData':'评价报表',
+  'app.acd.report.callData':'通话报表',
+  'app.acd.report.agentData':'客服人员数据',
+  'app.acd.report.statistic.hour':'按时统计',
+  'app.acd.report.statistic.day':'按天统计',
+  'app.acd.report.receive':'已接受',
+  'app.acd.report.noreceive':'未接受',
+  'app.acd.report.success':'成功',
+  'app.acd.report.timeout':'通话超时',
+  'app.acd.report.other':'其他',
+  'app.acd.report.solve':'已解决',
+  'app.acd.report.unsolve':'未解决',
+  'app.acd.report.imeeting':'iMeeting',
+  'app.acd.report.weixin':'微信',
+}

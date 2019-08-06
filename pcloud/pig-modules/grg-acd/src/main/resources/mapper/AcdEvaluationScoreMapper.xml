@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.grgbanking.grgacd.mapper.AcdEvaluationScoreMapper">
+
+    <sql id="scoreSql">
+        SELECT
+        id ,
+        name,
+        description,
+        TYPE,
+        score_value ,
+        score_index ,
+        enable,
+        created_time,
+        update_time ,
+        del_time ,
+        del_flag
+        FROM
+        acd_evaluation_score
+    </sql>
+    <resultMap id="acdEvaluationScoreMap" type="com.grgbanking.grgacd.model.AcdEvaluationScore">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="description" property="desc"></result>
+        <result column="TYPE" property="type"></result>
+        <result column="score_value" property="scoreValue"></result>
+        <result column="score_index" property="scoreIndex"></result>
+        <result column="enable" property="enable"></result>
+        <result column="created_time" property="createdTime"></result>
+        <result column="update_time" property="updateTime"></result>
+        <result column="del_time" property="delTime"></result>
+        <result column="del_flag" property="delFlag"></result>
+    </resultMap>
+
+    <select id="selectList" resultMap="acdEvaluationScoreMap">
+     <include refid="scoreSql"></include>
+        WHERE
+        del_flag = '0'
+        ORDER BY score_index ASC
+    </select>
+
+    <select id="selectById" resultMap="acdEvaluationScoreMap">
+        <include refid="scoreSql"></include>
+        WHERE
+        id =#{id}
+        AND del_flag = '0'
+    </select>
+</mapper>

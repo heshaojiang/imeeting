@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.pig.admin.mapper.BizCustomerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.pig.admin.model.entity.BizCustomer">
+        <id column="customer_id" property="customerId" />
+        <result column="customer_no" property="customerNo" />
+        <result column="customer_name" property="customerName" />
+        <result column="customer_info" property="customerInfo" />
+        <result column="telephone" property="call" />
+        <result column="email" property="email" />
+        <result column="type" property="type" />
+        <result column="licence" property="licence" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="billing_start_time" property="billingStartTime" />
+        <result column="billing_end_time" property="billingEndTime" />
+        <result column="billing_left" property="billingLeft" />
+        <result column="num_room" property="numRoom" />
+        <result column="num_meeting" property="numMeeting" />
+        <result column="num_video" property="numVideo" />
+        <result column="num_join" property="numJoin" />
+        <result column="pay_type" property="payType" />
+        <result column="status" property="status" />
+        <result column="del_flag" property="delFlag" />
+        <result column="del_time" property="delTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        customer_id AS customerId, customer_no AS customerNo, customer_name AS customerName, customer_info AS customerInfo, telephone, email, type, licence, create_time AS createTime, update_time AS updateTime, billing_start_time AS billingStartTime, billing_end_time AS billingEndTime, billing_left AS billingLeft, num_room AS numRoom, num_meeting AS numMeeting, num_video AS numVideo, num_join AS numJoin, pay_type AS payType, status, del_flag AS delFlag, del_time AS delTime
+    </sql>
+
+    <select id="selectBizCustomerPage" resultMap="BaseResultMap">
+        SELECT *
+        FROM biz_customer
+        WHERE  del_flag = 0
+        <if test="customerId !='0'.toString()">
+            AND customer_id = #{customerId}
+        </if>
+        <if test="customerName != null and customerName != ''">
+            AND customer_name LIKE CONCAT('%',#{customerName},'%')
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            <choose>
+                <when test="_databaseId=='mysql'">
+                    AND CONCAT( IFNULL(customer_name,''),IFNULL(customer_no,'') )
+                </when>
+                <when test="_databaseId=='oracle'">
+                    AND CONCAT( nvl(customer_name,''),nvl(customer_no,'') )
+                </when>
+            </choose>
+            LIKE #{pattern}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectBizCustomerPage" resultMap="BaseResultMap">
+        SELECT *
+        FROM biz_customer
+        WHERE  del_flag = 0
+        <if test="customerId !='0'.toString()">
+            AND customer_id = #{customerId}
+        </if>
+        <if test="customerName != null and customerName != ''">
+            AND customer_name LIKE CONCAT('%',#{customerName},'%')
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            <choose>
+                <when test="_databaseId=='mysql'">
+                    AND CONCAT( IFNULL(customer_name,''),IFNULL(customer_no,'') )
+                </when>
+                <when test="_databaseId=='oracle'">
+                    AND CONCAT( nvl(customer_name,''),nvl(customer_no,'') )
+                </when>
+            </choose>
+             LIKE #{pattern}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectBizCustomerByCustomerName" resultMap="BaseResultMap">
+        SELECT *
+        FROM biz_customer
+        WHERE  del_flag = 0 AND
+        customer_name = #{customerName}
+    </select>
+</mapper>

@@ -1,0 +1,33 @@
+package com.github.pig.admin.model.dto;
+
+import com.github.pig.admin.model.entity.SysUser;
+import lombok.Data;
+
+/**
+ * @author lengleng
+ * @date 2017/11/5
+ */
+@Data
+public class UserDto extends SysUser {
+    /**
+     * 角色ID
+     */
+    private Integer roleId;
+
+    private Integer deptId;
+
+    /**
+     * 新密码
+     */
+    private String newpassword1;
+
+    /**
+     * 父ID
+     */
+    private Integer parentId;
+    /**
+     * 商户ID
+     */
+    private Integer customerId;
+
+}

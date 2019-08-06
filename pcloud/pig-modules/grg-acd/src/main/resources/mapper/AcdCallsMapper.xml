@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.grgbanking.grgacd.mapper.AcdCallsMapper">
+
+    <sql id="selectSql">
+        SELECT  * FROM acd_calls
+    </sql>
+
+
+    <!-- CallDay结果集 -->
+    <resultMap id="CallDayResultMap" type="com.grgbanking.grgacd.dto.CallDayDto">
+        <id column="acd_time" property="acdTime"/>
+        <result column="duration_time" property="durationTime"/>
+        <result column="queue_id" property="queueId"/>
+        <result column="call_status" property="callStatus"/>
+        <result column="status_count" property="statusCount"/>
+    </resultMap>
+
+    <resultMap id="CallMinuteResultMap" type="com.grgbanking.grgacd.dto.CallMinuteDto">
+        <id column="acd_time" property="acdTime"/>
+        <result column="queue_id" property="queueId"/>
+        <result column="call_status" property="callStatus"/>
+        <result column="status_count" property="statusCount"/>
+        <result column="hourTime" property="hour"/>
+        <result column="minuteTime" property="minute"/>
+        <result column="duration_time" property="durationTime"/>
+
+    </resultMap>
+
+    <resultMap id="callResultMap" type="com.grgbanking.grgacd.model.AcdCalls">
+        <id column="id" property="id"></id>
+        <result column="call_id" property="callId"></result>
+        <result column="caller_id" property="callerId"></result>
+        <result column="caller_name" property="callerName"></result>
+        <result column="call_status" property="callStatus"></result>
+        <result column="queue_id" property="queueId"></result>
+        <result column="agent_id" property="agentId"></result>
+        <result column="makecall_time" property="makecallTime"></result>
+        <result column="answer_time" property="answerTime"></result>
+        <result column="hangup_time" property="hangupTime"></result>
+        <result column="recorder_video_status" property="recorderVideoStatus"></result>
+        <result column="recorder_video_filepath" property="recorderVideoFilepath"></result>
+        <result column="recorder_audio_status" property="recorderAudioStatus"></result>
+        <result column="recorder_audio_filepath" property="recorderAudioFilepath"></result>
+        <result column="recorder_preview_filepath" property="recorderPreviewFilepath"></result>
+        <result column="recorder_chat" property="recorderChat"></result>
+        <result column="created_time" property="createdTime"></result>
+        <result column="update_time" property="updateTime"></result>
+        <result column="del_time" property="delTime"></result>
+        <result column="del_flag" property="delFlag"></result>
+        <association property="agent" column="agent_id" select="com.grgbanking.grgacd.mapper.SysUserMapper.selectById">
+        </association>
+        <association property="queue" column="queue_id"
+                     select="com.grgbanking.grgacd.mapper.AcdQueueMapper.selectById"></association>
+    </resultMap>
+    
+    <resultMap id="callStatusMap" type="java.util.HashMap">
+        <result property="key" column="intervalTime"></result>
+        <result property="value" column="totalCount"></result>
+    </resultMap>
+
+
+    <!--获取每一天各种通话类型的平均速度-->
+    <select id="avgDayTime" resultMap="CallDayResultMap">
+        SELECT
+        DATE(makecall_time) AS acd_time,
+        <if test="queue_id">
+            queue_id,
+        </if>
+        call_status,
+        ROUND(avg(TIMESTAMPDIFF(SECOND,${from_time},${to_time})),2) AS duration_time
+        FROM
+        acd_calls
+        <where>
+            <if test="call_status!=null and call_status!=''">
+                call_status=#{call_status}
+            </if>
+        </where>
+        GROUP BY
+        <if test="queue_id">
+            queue_id,
+        </if>
+        acd_time
+        ORDER BY
+        acd_time DESC
+    </select>
+
+
+    <!--获取每一天各种通话类型的平均速度-->
+    <select id="sumCount" resultMap="CallDayResultMap">
+        SELECT
+        DATE(makecall_time) AS acd_time,
+        call_status,
+        <if test="queue_id">
+            queue_id,
+        </if>
+        COUNT(id) as status_count
+        FROM
+        acd_calls
+        WHERE
+        call_status = #{call_status}
+        GROUP BY
+        <if test="queue_id">
+            queue_id,
+        </if>
+        acd_time
+        ORDER BY
+        acd_time DESC
+    </select>
+
+    <!--获取某一天各种通话类型的平均速度-->
+    <select id="avgMinuteTime" resultMap="CallMinuteResultMap">
+        SELECT
+        DATE(makecall_time) AS acd_time,
+        HOUR (acd_calls.makecall_time) AS hourTime,
+        FLOOR( MINUTE (acd_calls.makecall_time) / 30) AS minuteTime,
+        call_status,
+        <if test="queue_id">
+            queue_id,
+        </if>
+        ROUND(avg(TIMESTAMPDIFF(SECOND,${from_time},${to_time}) ),2) AS duration_time
+        FROM
+        acd_calls
+        <where>
+            <choose>
+                <when test="queryDate!=null and queryDate!=''">
+                    DATE(makecall_time) = DATE(#{queryDate})
+                </when>
+                <otherwise>
+                    DATE(makecall_time) = DATE(NOW())
+                </otherwise>
+            </choose>
+            <if test="call_status!=null and call_status!=''">
+                AND call_status=#{call_status}
+            </if>
+        </where>
+        GROUP BY
+        <if test="queue_id">
+            queue_id,
+        </if>
+        hourTime,
+        minuteTime
+        ORDER BY
+        acd_time ASC
+    </select>
+
+    <!--获取每一天通话类型的数量-->
+    <select id="sumMinuteCount" resultMap="CallMinuteResultMap">
+        SELECT
+        HOUR (acd_calls.answer_time) AS hourTime,
+        FLOOR( MINUTE (acd_calls.answer_time) / 30) AS minuteTime,
+        DATE(makecall_time) AS acd_time,
+        call_status,
+        <if test="queue_id">
+            queue_id,
+        </if>
+        COUNT(*) AS status_count
+        FROM
+        acd_calls
+        <where>
+            call_status = #{call_status}
+            <choose>
+                <when test="queryDate!=null and queryDate!=''">
+                    AND DATE(makecall_time) = DATE(#{queryDate})
+                </when>
+                <otherwise>
+                    AND DATE(makecall_time) = DATE(NOW())
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY
+        <if test="queue_id">
+            queue_id,
+        </if>
+        hourTime,
+        minuteTime
+    </select>
+
+    <select id="getCallById" parameterType="String" resultMap="callResultMap">
+        <include refid="selectSql"/>
+        WHERE call_id=#{callId}
+    </select>
+
+    <select id="getCallList" resultMap="callResultMap">
+        SELECT
+          calls.*
+        FROM
+          acd_calls calls
+        LEFT JOIN sys_user agent ON calls.agent_id = agent.user_id
+        <where>
+        <if test="callId!=null and callId!=''">
+            AND call_id=#{callId}
+        </if>
+        <if test="callerName!=null and callerName!=''">
+            AND caller_name=#{callerName}
+        </if>
+        <if test="agentName!=null and agentName!=''">
+            AND agent.username=#{agentName}
+        </if>
+        <if test="callStatus!=null and callStatus!=''">
+            AND call_status=#{callStatus}
+        </if>
+        <if test="makeCallTime!=null and makeCallTime!=''">
+            AND makecall_time&gt;=#{makeCallTime}
+        </if>
+        <if test="hangUpTime!=null and hangUpTime!=''">
+            AND hangup_time&lt;=#{hangUpTime}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <!--bind 标签的两个属性都是必选项， name 为绑定到上下文的变量名,value为OGNL表达式。-->
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            <choose>
+                <when test="_databaseId=='mysql'">
+                    AND CONCAT( IFNULL(caller_name,''),IFNULL(agent.userName,'') )
+                </when>
+                <when test="_databaseId=='oracle'">
+                    AND CONCAT( nvl(caller_name,''),nvl(agent.userName,'') )
+                </when>
+            </choose>
+             LIKE #{pattern}
+        </if>
+        </where>
+    </select>
+
+    <select id="getCallListWithStatus" resultMap="callResultMap">
+        <include refid="selectSql"/>
+        <where>
+            <if test="fromDate!=null and fromDate!=''">
+                AND makecall_time$gt=#{fromDate}
+            </if>
+            <if test="toDate!=null and toDate!=''">
+                AND makecall_time&lt;=#{toDate}
+            </if>
+            <if test="callStatus!=null and callStatus!=''">
+                AND call_status=#{callStatus}
+            </if>
+            <if test="status!=null and status.size()>0">
+                AND call_status in
+                <foreach collection="status" item="item" index="index"
+                         open="(" separator="," close=")">#{item}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+
+    <select id="getCallListEntity" resultMap="callResultMap">
+        <include refid="selectSql"/>
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getCallCountWithStatus" resultMap="callStatusMap" databaseId="mysql">
+        SELECT
+            DATE(makecall_time)  intervalTime,
+            count(id)  totalCount
+        FROM
+            acd_calls
+        <where>
+            <if test="status!=null and status.size()>0">
+                call_status in
+                <foreach collection="status" item="item" index="index"
+                         open="(" separator="," close=")">#{item}
+                </foreach>
+            </if>
+            <if test="callStatus!=null and callStatus!=''">
+                AND call_status=#{callStatus}
+            </if>
+            <if test="fromDate!=null">
+               AND makecall_time&gt;=DATE(#{fromDate,jdbcType=TIMESTAMP})
+            </if>
+            <if test="toDate!=null">
+              AND  makecall_time&lt;=DATE(#{toDate,jdbcType=TIMESTAMP})
+            </if>
+
+        </where>
+        GROUP BY
+        intervalTime
+    </select>
+
+    <select id="getCallCountWithStatus" resultMap="callStatusMap" databaseId="oracle">
+        SELECT COUNT(temp.intervalTime) totalCount, temp.intervalTime FROM(
+
+            SELECT
+              TO_CHAR(makecall_time,'YYYY-MM-DD') intervalTime
+            FROM
+            acd_calls
+            <where>
+                <if test="status!=null and status.size()>0">
+                    call_status in
+                    <foreach collection="status" item="item" index="index"
+                             open="(" separator="," close=")">#{item}
+                    </foreach>
+                </if>
+                <if test="callStatus!=null and callStatus!=''">
+                    AND call_status=#{callStatus}
+                </if>
+                <if test="fromDate!=null">
+                    AND makecall_time &gt;= (TO_DATE( #{fromDate,jdbcType=TIMESTAMP}, 'YYYY-MM-DD' ))
+                </if>
+                <if test="toDate!=null">
+                    AND makecall_time &lt;=TO_DATE(#{toDate,jdbcType=TIMESTAMP},'YYYY-MM-DD')
+                </if>
+            </where>
+        ) temp
+        GROUP BY temp.intervalTime
+    </select>
+</mapper>
