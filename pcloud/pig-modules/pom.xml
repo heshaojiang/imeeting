@@ -18,7 +18,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jsonrpc.version>6.10.0</jsonrpc.version>
-        <poi.version>3.13</poi.version>
+        <poi.version>4.1.2</poi.version>
         <openvidu.version>2.9.0</openvidu.version>
         <openvidu.client.version>1.1.0</openvidu.client.version>
     </properties>
